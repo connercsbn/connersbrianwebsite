@@ -45,12 +45,36 @@ import { setBrian } from "./lib/brian";
         console.log(ctx);
         console.log(canvas);
         brian = setBrian(brian);
-        timeInterval = setInterval(() => {
-            if (counting) {
-                seconds += 1;
-            }
-        }, 1000);
+        console.log("looping");
+            loop();
     })
+
+    let frame = 0;
+    let startpoint = [100, 100];
+    let endpoint = [0, 0];
+    let curr = [0, 0];
+    let totalFrames = 500;
+    let fx = (thisFrame) => { return endpoint[X] - startpoint[X] * (thisFrame / totalFrames); };
+    let fy = (thisFrame) => { return endpoint[Y] - startpoint[Y] * (thisFrame / totalFrames); };
+
+    function loop() {
+        let interval = setInterval(() => {
+            if (!frame) { // new endpoint if frame is 0 (just starting again)
+                endpoint = [Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)];
+            } // linear vvvv
+            curr = [fx(frame), fy(frame)];
+            console.log(`drawing ${curr[X]}, ${curr[Y]}`)
+            draw(curr[X], curr[Y]);
+            frame++;
+            if (frame == totalFrames) {
+                console.log("total number of frames");
+                return "ok";
+                startpoint = curr;
+                frame = 0;
+            }
+        // start position x at 0; then increment each draw to calculate position
+        }, 10);
+    }
 
     function draw(x, y) {
         x = canvas.width - x;
@@ -65,12 +89,6 @@ import { setBrian } from "./lib/brian";
         
         let offset = [w / 2, h / 2];
         ctx.drawImage(brian, x - offset[X], y - offset[Y], w, h);
-        // ctx.draw()
-        // ctx.beginPath();
-        // ctx.arc(x, y, 50, 0, 2 * Math.PI);
-        // ctx.stroke(); 
-        counting = true;
-        debounce();
     }
 
     $: innerWidth && resizeCanvas();
@@ -83,25 +101,10 @@ import { setBrian } from "./lib/brian";
             console.log(brian);
         }
     }    
-    const handleMouseUp = () => {
-        painting = true; 
-        draw(x, y);
-    };
-    const handleMouseDown = () => {
-        painting = false; 
-    };
-    const handleKeyPress = ({ key }) => {
-        comp = comps[key] || 'copy';
-        console.log(comp);
-    }
 
 </script>
 
-<svelte:window  
-    on:mouseup={handleMouseUp} 
-    on:mousedown={handleMouseDown} 
-    on:keydown={handleKeyPress}
-    bind:innerWidth />
+<svelte:window bind:innerWidth />
 
 <main>
     <canvas 
