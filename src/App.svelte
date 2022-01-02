@@ -16,7 +16,7 @@ import { draggable } from 'svelte-drag';
     let counting = false;
     let timeInterval;
     let comp = '';
-    $: ctx.globalCompositeOperation=comp;
+    $: ctx.globalCompositeOperation = comp;
 
     let comps = {
         '1': 'luminosity'               ,
@@ -124,8 +124,7 @@ import { draggable } from 'svelte-drag';
     on:keydown={handleKeyPress}
     bind:innerWidth />
 
-<main>
-    <h1 class="score">You've been playing for {seconds} second{seconds != 1 ? "s" : ""}<br/>{comp}</h1>
+<main><!-- <h1 class="score">You've been playing for {seconds} second{seconds != 1 ? "s" : ""}<br/>{comp}</h1> -->
     <canvas 
         bind:this={canvas}
         class="canvas-thing">
