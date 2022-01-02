@@ -1,7 +1,6 @@
 <script>
 import { onMount } from "svelte";
 import { setBrian } from "./lib/brian";
-import { draggable } from 'svelte-drag';
 
     const X = 0;
     const Y = 1;
@@ -10,11 +9,7 @@ import { draggable } from 'svelte-drag';
     let ctx = {};
     let x, y;
     let brian = new Image;
-    let painting = true;
-    let seconds = 0;
-    let timer;
     let counting = false;
-    let timeInterval;
     let comp = '';
     $: ctx.globalCompositeOperation = comp;
 
@@ -57,13 +52,6 @@ import { draggable } from 'svelte-drag';
         }, 1000);
     })
 
-    function debounce() {
-        clearTimeout(timer);
-		timer = setTimeout(() => {
-            counting = false;
-		}, 1000);
-    }
-
     function draw(x, y) {
         x = canvas.width - x;
         y = canvas.height - y;
@@ -83,14 +71,6 @@ import { draggable } from 'svelte-drag';
         // ctx.stroke(); 
         counting = true;
         debounce();
-    }
-
-    function handleMouseMove(e) {
-        let begin = new Date();
-        let rect = canvas.getBoundingClientRect();
-        x = e.clientX - rect.left;
-        y = e.clientY - rect.top;
-        painting && draw(x, y);
     }
 
     $: innerWidth && resizeCanvas();
@@ -117,14 +97,13 @@ import { draggable } from 'svelte-drag';
 
 </script>
 
-<svelte:window 
-    on:mousemove={handleMouseMove} 
+<svelte:window  
     on:mouseup={handleMouseUp} 
     on:mousedown={handleMouseDown} 
     on:keydown={handleKeyPress}
     bind:innerWidth />
 
-<main><!-- <h1 class="score">You've been playing for {seconds} second{seconds != 1 ? "s" : ""}<br/>{comp}</h1> -->
+<main>
     <canvas 
         bind:this={canvas}
         class="canvas-thing">
