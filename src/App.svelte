@@ -4,7 +4,7 @@ import { setBrian } from "./lib/brian";
 
     const X = 0;
     const Y = 1;
-	let innerWidth = window.innerWidth;
+    let innerWidth = window.innerWidth;
     let canvas;
     let ctx = {};
     let x, y;
@@ -38,7 +38,7 @@ import { setBrian } from "./lib/brian";
     }
 
     onMount(() => {
-		ctx = canvas.getContext('2d');
+        ctx = canvas.getContext('2d');
         ctx.imageSmoothingEnabled = true;
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -54,23 +54,32 @@ import { setBrian } from "./lib/brian";
     let endpoint = [0, 0];
     let curr = [0, 0];
     let totalFrames = 500; //                                    X  ____percentage finished____
-    let fx = (thisFrame) => { return (endpoint[X] - startpoint[X]) * (thisFrame / totalFrames); };
-    let fy = (thisFrame) => { return (endpoint[Y] - startpoint[Y]) * (thisFrame / totalFrames); };
+    let fx = (thisFrame) => { return startpoint[X] + (endpoint[X] - startpoint[X]) * (thisFrame / totalFrames); };
+    let fy = (thisFrame) => { return startpoint[Y] + (endpoint[Y] - startpoint[Y]) * (thisFrame / totalFrames); };
 
     let interval;
     function loop() {
         interval = setInterval(() => {
             if (frame == 0) { // new endpoint if frame is 0 (just starting again)
-                endpoint = [Math.floor(Math.random() * canvas.width - (canvas.width / 2)), Math.floor(Math.random() * canvas.height) - (canvas.height / 2)];
+                endpoint = [
+                    Math.floor(
+                        Math.random() * canvas.width
+                    ), Math.floor(
+                        Math.random() * canvas.height
+                    )
+                ];
+                // endpoint = [600, 600];
             } 
             curr = [fx(frame), fy(frame)];
-            if (!(frame % 200)) {
-                console.log(`drawing ${curr[X]}, ${curr[Y]} | s: ${startpoint}, e: ${endpoint}`)
+            if (!(frame % 250)) {
+                // console.log(`${startpoint[X]} --> ${curr[X]} --> ${endpoint[X]}`)
+                console.log(startpoint, endpoint);
             }
+            drawPath(curr[X], curr[Y]);
             draw(curr[X], curr[Y]);
             frame++;
             if (frame == totalFrames) {
-                startpoint = curr;
+                startpoint = endpoint;
                 frame = 0;
                 interval = clearInterval(interval);
                 loop();
@@ -79,6 +88,11 @@ import { setBrian } from "./lib/brian";
         }, 10);
     }
 
+    function drawPath(x, y) {
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, 2 * Math.PI);
+        ctx.stroke(); 
+    }
     function draw(x, y) {
         x = canvas.width - x;
         y = canvas.height - y;
@@ -120,17 +134,17 @@ import { setBrian } from "./lib/brian";
     *,main {
         padding:0;margin:0;
     }
-	main {
-		text-align: center;
-		padding: 0em;
-		max-width: 240px;
-		margin: 0 auto;
-	}
-	@media (min-width: 640px) {
-		main {
-			max-width: none;
-		}
-	}
+    main {
+        text-align: center;
+        padding: 0em;
+        max-width: 240px;
+        margin: 0 auto;
+    }
+    @media (min-width: 640px) {
+        main {
+            max-width: none;
+        }
+    }
     article {
         position:absolute;
         top:0;bottom:0;left:0;right:0;
