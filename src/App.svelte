@@ -118,13 +118,6 @@ import { setBrian } from "./lib/brian";
             canvas.height = window.innerHeight;
         }
     }    
-    let message;
-    function setCreditsTimeout(ms) {
-        setTimeout(() => {
-            clearInterval(interval);
-            message = "And then it loops or something, idk yet";
-        }, ms);
-    }
     let introTimeOut;
     function handleSoftBegin() {
         buttonHovering = true;
@@ -144,13 +137,11 @@ import { setBrian } from "./lib/brian";
         if (music.paused) {
             music.play();
             loop();
-            setCreditsTimeout(music.duration * 1000 - introLength);
         } else {
             clearTimeout(introTimeOut);
             setTimeout(() => {
                 loop();
                 music.play();
-                setCreditsTimeout(music.duration * 1000 - (new Date() - whenSongBegan));
             }, introLength - (new Date() - whenSongBegan));
         }
         // wait until music is at a certain point, then loop.
@@ -171,11 +162,6 @@ import { setBrian } from "./lib/brian";
     {#if !hasBegun}
         <div class="beginExperienceContainer">
             <button class="beginExperience" on:mouseenter={handleSoftBegin} on:mouseleave={handleExit} on:click={handleBegin}>Begin experience</button>
-        </div>
-    {/if}
-    {#if message}
-        <div class="beginExperienceContainer">
-            <h1>{message}</h1>
         </div>
     {/if}
     <canvas 
