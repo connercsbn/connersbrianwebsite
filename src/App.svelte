@@ -17,7 +17,7 @@ import { setBrian } from "./lib/brian";
     let buttonHovering = false;
     let hasBegun = false;
     let music = new Audio('redboneedited.opus');
-    let introLength = 7.5;
+    let introLength = 7450;
     let whenSongBegan = undefined;
     $: ctx.globalCompositeOperation = comp;
     $: innerWidth && resizeCanvas();
@@ -74,7 +74,6 @@ import { setBrian } from "./lib/brian";
                     Math.floor( Math.random() * canvas.width), 
                     Math.floor( Math.random() * canvas.height)
                 ];
-                // endpoint = [600, 600];
             } 
             curr = [fx(frame), fy(frame)];
             // drawPath(curr[X], curr[Y]);
@@ -119,6 +118,13 @@ import { setBrian } from "./lib/brian";
             canvas.height = window.innerHeight;
         }
     }    
+    let message;
+    function setCreditsTimeout(ms) {
+        setTimeout(() => {
+            clearInterval(interval);
+            message = "And then it loops or something, idk yet";
+        }, ms);
+    }
     let introTimeOut;
     function handleSoftBegin() {
         buttonHovering = true;
@@ -129,7 +135,7 @@ import { setBrian } from "./lib/brian";
         // start timing since song began
         introTimeOut = setTimeout(() => {
             music.pause();
-        }, 7450);
+        }, introLength);
     }
     function handleBegin() {
         console.log("beginning experiencve")
@@ -138,13 +144,14 @@ import { setBrian } from "./lib/brian";
         if (music.paused) {
             music.play();
             loop();
+            setCreditsTimeout(music.duration * 1000 - introLength);
         } else {
             clearTimeout(introTimeOut);
             setTimeout(() => {
                 loop();
                 music.play();
-
-            }, 7450 - (new Date() - whenSongBegan));
+                setCreditsTimeout(music.duration * 1000 - (new Date() - whenSongBegan));
+            }, introLength - (new Date() - whenSongBegan));
         }
         // wait until music is at a certain point, then loop.
     }
@@ -162,9 +169,14 @@ import { setBrian } from "./lib/brian";
 
 <main>
     {#if !hasBegun}
-    <div class="beginExperienceContainer">
-        <button class="beginExperience" on:mouseenter={handleSoftBegin} on:mouseleave={handleExit} on:click={handleBegin}>Begin experience</button>
-    </div>
+        <div class="beginExperienceContainer">
+            <button class="beginExperience" on:mouseenter={handleSoftBegin} on:mouseleave={handleExit} on:click={handleBegin}>Begin experience</button>
+        </div>
+    {/if}
+    {#if message}
+        <div class="beginExperienceContainer">
+            <h1>{message}</h1>
+        </div>
     {/if}
     <canvas 
         bind:this={canvas}
@@ -202,8 +214,7 @@ import { setBrian } from "./lib/brian";
     h1 {
         text-align: center;
         margin: 3%;
-        background: black;
-        color: white;
+        color: black;
     }
     p {
         padding: 10px;
