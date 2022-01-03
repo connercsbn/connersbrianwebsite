@@ -53,24 +53,27 @@ import { setBrian } from "./lib/brian";
     let startpoint = [100, 100];
     let endpoint = [0, 0];
     let curr = [0, 0];
-    let totalFrames = 500;
-    let fx = (thisFrame) => { return endpoint[X] - startpoint[X] * (thisFrame / totalFrames); };
-    let fy = (thisFrame) => { return endpoint[Y] - startpoint[Y] * (thisFrame / totalFrames); };
+    let totalFrames = 500; //                                    X  ____percentage finished____
+    let fx = (thisFrame) => { return (endpoint[X] - startpoint[X]) * (thisFrame / totalFrames); };
+    let fy = (thisFrame) => { return (endpoint[Y] - startpoint[Y]) * (thisFrame / totalFrames); };
 
+    let interval;
     function loop() {
-        let interval = setInterval(() => {
-            if (!frame) { // new endpoint if frame is 0 (just starting again)
-                endpoint = [Math.floor(Math.random() * 800), Math.floor(Math.random() * 800)];
-            } // linear vvvv
+        interval = setInterval(() => {
+            if (frame == 0) { // new endpoint if frame is 0 (just starting again)
+                endpoint = [Math.floor(Math.random() * canvas.width - (canvas.width / 2)), Math.floor(Math.random() * canvas.height) - (canvas.height / 2)];
+            } 
             curr = [fx(frame), fy(frame)];
-            console.log(`drawing ${curr[X]}, ${curr[Y]}`)
+            if (!(frame % 200)) {
+                console.log(`drawing ${curr[X]}, ${curr[Y]} | s: ${startpoint}, e: ${endpoint}`)
+            }
             draw(curr[X], curr[Y]);
             frame++;
             if (frame == totalFrames) {
-                console.log("total number of frames");
-                return "ok";
                 startpoint = curr;
                 frame = 0;
+                interval = clearInterval(interval);
+                loop();
             }
         // start position x at 0; then increment each draw to calculate position
         }, 10);
