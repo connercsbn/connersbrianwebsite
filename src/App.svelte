@@ -11,7 +11,16 @@ import { setBrian } from "./lib/brian";
     let brian = new Image;
     let counting = false;
     let comp = '';
+    let starting = false;
+    let started = false;
+    let clicking = false;
+    let buttonHovering = false;
+    let hasBegun = false;
+    let music = new Audio('redboneedited.opus');
+    let introLength = 7.5;
+    let whenSongBegan = undefined;
     $: ctx.globalCompositeOperation = comp;
+    $: innerWidth && resizeCanvas();
 
     let comps = {
         '1': 'luminosity'               ,
@@ -35,7 +44,7 @@ import { setBrian } from "./lib/brian";
         'o': 'source-out'               ,
         'p': 'source-in'                ,
         '[': 'source-over'              ,
-        'space': 'copy'
+        // 'space': 'copy'
     };
     let compsValues = Object.values(comps);
 
@@ -47,15 +56,13 @@ import { setBrian } from "./lib/brian";
         console.log(ctx);
         console.log(canvas);
         brian = setBrian(brian);
-        console.log("looping");
-            loop();
     })
 
     let frame = 0;
     let startpoint = [100, 100];
     let endpoint = [0, 0];
     let curr = [0, 0];
-    let totalFrames = 500;
+    let totalFrames = 300;
     let fx = (thisFrame) => { return startpoint[X] + (endpoint[X] - startpoint[X]) * (thisFrame / totalFrames); };
     let fy = (thisFrame) => { return startpoint[Y] + (endpoint[Y] - startpoint[Y]) * (thisFrame / totalFrames); };
 
@@ -105,23 +112,60 @@ import { setBrian } from "./lib/brian";
         let offset = [w / 2, h / 2];
         ctx.drawImage(brian, x - offset[X], y - offset[Y], w, h);
     }
-
-    $: innerWidth && resizeCanvas();
-
     function resizeCanvas() {
         if (canvas) {
             console.log('called resizeCanvas')
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            console.log(brian);
         }
     }    
+    let introTimeOut;
+    function handleSoftBegin() {
+        buttonHovering = true;
+        music = new Audio('redboneedited.opus');
+        console.log("playing song")
+        music.play();
+        whenSongBegan = new Date();
+        // start timing since song began
+        introTimeOut = setTimeout(() => {
+            music.pause();
+        }, 7450);
+    }
+    function handleBegin() {
+        console.log("beginning experiencve")
+        // get rid of button
+        hasBegun = true;
+        if (music.paused) {
+            music.play();
+            loop();
+        } else {
+            clearTimeout(introTimeOut);
+            setTimeout(() => {
+                loop();
+                music.play();
+
+            }, 7450 - (new Date() - whenSongBegan));
+        }
+        // wait until music is at a certain point, then loop.
+    }
+    function handleExit() {
+        clearTimeout(introTimeOut);
+        buttonHovering = false;
+        console.log("not playing song")
+        music.pause();
+        // stop timing since song began
+    }
 
 </script>
 
-<svelte:window bind:innerWidth />
+<svelte:window bind:innerWidth on:mouseup={() => {clicking = false}} on:mousedown={() => {clicking = true}} />
 
 <main>
+    {#if !hasBegun}
+    <div class="beginExperienceContainer">
+        <button class="beginExperience" on:mouseenter={handleSoftBegin} on:mouseleave={handleExit} on:click={handleBegin}>Begin experience</button>
+    </div>
+    {/if}
     <canvas 
         bind:this={canvas}
         class="canvas-thing">
@@ -166,5 +210,15 @@ import { setBrian } from "./lib/brian";
     }
     .score {
         position: absolute;
+    }
+    .beginExperienceContainer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100vw;
+        height: 100vh;
+    }
+    .beginExperience {
+        padding: 10px;
     }
 </style>
