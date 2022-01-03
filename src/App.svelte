@@ -34,8 +34,10 @@ import { setBrian } from "./lib/brian";
         'i': 'destination-over'         ,
         'o': 'source-out'               ,
         'p': 'source-in'                ,
-        '[': 'source-over'              
-    }
+        '[': 'source-over'              ,
+        'space': 'copy'
+    };
+    let compsValues = Object.values(comps);
 
     onMount(() => {
         ctx = canvas.getContext('2d');
@@ -53,7 +55,7 @@ import { setBrian } from "./lib/brian";
     let startpoint = [100, 100];
     let endpoint = [0, 0];
     let curr = [0, 0];
-    let totalFrames = 500; //                                    X  ____percentage finished____
+    let totalFrames = 500;
     let fx = (thisFrame) => { return startpoint[X] + (endpoint[X] - startpoint[X]) * (thisFrame / totalFrames); };
     let fy = (thisFrame) => { return startpoint[Y] + (endpoint[Y] - startpoint[Y]) * (thisFrame / totalFrames); };
 
@@ -62,21 +64,17 @@ import { setBrian } from "./lib/brian";
         interval = setInterval(() => {
             if (frame == 0) { // new endpoint if frame is 0 (just starting again)
                 endpoint = [
-                    Math.floor(
-                        Math.random() * canvas.width
-                    ), Math.floor(
-                        Math.random() * canvas.height
-                    )
+                    Math.floor( Math.random() * canvas.width), 
+                    Math.floor( Math.random() * canvas.height)
                 ];
                 // endpoint = [600, 600];
             } 
             curr = [fx(frame), fy(frame)];
-            if (!(frame % 250)) {
-                // console.log(`${startpoint[X]} --> ${curr[X]} --> ${endpoint[X]}`)
-                console.log(startpoint, endpoint);
-            }
-            drawPath(curr[X], curr[Y]);
+            // drawPath(curr[X], curr[Y]);
             draw(curr[X], curr[Y]);
+            if (frame == Math.floor(Math.random() * 500)) {
+                ctx.globalCompositeOperation = compsValues[Math.floor(Math.random() * compsValues.length)];
+            }
             frame++;
             if (frame == totalFrames) {
                 startpoint = endpoint;
