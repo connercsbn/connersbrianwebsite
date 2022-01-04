@@ -126,24 +126,14 @@ import { setBrian } from "./lib/brian";
         music.play();
         whenSongBegan = new Date();
         // start timing since song began
-        introTimeOut = setTimeout(() => {
-            music.pause();
-        }, introLength);
     }
     function handleBegin() {
         console.log("beginning experiencve")
         // get rid of button
         hasBegun = true;
-        if (music.paused) {
-            music.play();
+        setTimeout(() => {
             loop();
-        } else {
-            clearTimeout(introTimeOut);
-            setTimeout(() => {
-                loop();
-                music.play();
-            }, introLength - (new Date() - whenSongBegan));
-        }
+        }, introLength - (new Date() - whenSongBegan));
         // wait until music is at a certain point, then loop.
     }
     function handleExit() {
