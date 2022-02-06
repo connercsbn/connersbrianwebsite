@@ -5,7 +5,7 @@ import { setBrian } from "./lib/brian";
     const X = 0;
     const Y = 1;
     let innerWidth = window.innerWidth;
-    let canvas;
+    let canvas = {width: 0, height: 0};
     let ctx = {};
     let x, y;
     let brian = new Image;
@@ -19,8 +19,17 @@ import { setBrian } from "./lib/brian";
     let music = new Audio('redboneedited.opus');
     let introLength = 7450;
     let whenSongBegan = undefined;
+    // bpm is 96.484;
+    // roughly 1860 frames per bar
+    // 465 frames per beat if 10ms apart
+    let lastLoop = undefined;
     $: ctx.globalCompositeOperation = comp;
     $: innerWidth && resizeCanvas();
+    $: xBound = canvas.width / 1.5;
+    $: yBound = canvas.height / 1.5;
+    $: xBoundOffset = (canvas.width / 2) - (xBound / 2);
+    $: yBoundOffset = (canvas.height / 2) - (yBound / 2);
+
 
     let comps = {
         '1': 'luminosity'               ,
@@ -42,10 +51,12 @@ import { setBrian } from "./lib/brian";
         'u': 'destination-in'           ,
         'i': 'destination-over'         ,
         'o': 'source-out'               ,
-        'p': 'source-in'                ,
-        '[': 'source-over'              ,
+        // 'p': 'source-in'                ,
+        // '[': 'source-over'              ,
         // 'space': 'copy'
     };
+
+
     let compsValues = Object.values(comps);
 
     onMount(() => {
@@ -59,33 +70,51 @@ import { setBrian } from "./lib/brian";
     })
 
     let frame = 0;
-    let startpoint = [100, 100];
+    let startpoint = undefined;
     let endpoint = [0, 0];
     let curr = [0, 0];
-    let totalFrames = 300;
+    let totalFrames = 186;
     let fx = (thisFrame) => { return startpoint[X] + (endpoint[X] - startpoint[X]) * (thisFrame / totalFrames); };
     let fy = (thisFrame) => { return startpoint[Y] + (endpoint[Y] - startpoint[Y]) * (thisFrame / totalFrames); };
 
     let interval;
+    let currBeat = 0;
+    // let ranBeat = Math.ceil(Math.random() * 8);
+    let nextBeat = 0;
     function loop() {
+        console.log(xBoundOffset);
+        if (!startpoint) { startpoint = [canvas.width / 2, canvas.height / 2] }
         interval = setInterval(() => {
+            if (frame % Math.floor(totalFrames / 16) == 0) {
+                if (ranBeat == currBeat) {
+                    ctx.globalCompositeOperation = compsValues[Math.floor(Math.random() * compsValues.length)];
+                    nextBeat = (nextBeat + 3) % 8
+                    // currBeat = -1;
+                    // ranBeat = Math.ceil(Math.random() * 8);
+                }
+                console.log(ctx.globalCompositeOperation);
+                console.log(currBeat, ranBeat);
+                currBeat++;
+            }
             if (frame == 0) { // new endpoint if frame is 0 (just starting again)
                 endpoint = [
-                    Math.floor( Math.random() * canvas.width), 
-                    Math.floor( Math.random() * canvas.height)
+                    Math.floor(Math.random() * xBound) + xBoundOffset,
+                    Math.floor(Math.random() * yBound) + yBoundOffset
                 ];
             } 
             curr = [fx(frame), fy(frame)];
             // drawPath(curr[X], curr[Y]);
             draw(curr[X], curr[Y]);
-            if (frame == Math.floor(Math.random() * 500)) {
-                ctx.globalCompositeOperation = compsValues[Math.floor(Math.random() * compsValues.length)];
-            }
+            // if (frame == Math.floor(Math.random() * 200)) {
+            //     ctx.globalCompositeOperation = compsValues[Math.floor(Math.random() * compsValues.length)];
+            // }
             frame++;
             if (frame == totalFrames) {
                 startpoint = endpoint;
                 frame = 0;
                 interval = clearInterval(interval);
+                console.log("Last: ", Math.abs(lastLoop - new Date()))
+                lastLoop = new Date();
                 loop();
             }
         // start position x at 0; then increment each draw to calculate position
@@ -122,14 +151,11 @@ import { setBrian } from "./lib/brian";
     function handleSoftBegin() {
         buttonHovering = true;
         music = new Audio('redboneedited.opus');
-        console.log("playing song")
         music.play();
         whenSongBegan = new Date();
         // start timing since song began
     }
     function handleBegin() {
-        console.log("beginning experiencve")
-        // get rid of button
         hasBegun = true;
         setTimeout(() => {
             loop();
@@ -139,7 +165,6 @@ import { setBrian } from "./lib/brian";
     function handleExit() {
         clearTimeout(introTimeOut);
         buttonHovering = false;
-        console.log("not playing song")
         music.pause();
         // stop timing since song began
     }
